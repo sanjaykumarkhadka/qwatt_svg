@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Channel Letter Configurator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        header {
+            background-color: #f8f8f8;
+            padding: 15px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom: 3px solid #0099ff;
+            color: #0099ff;
+            font-weight: bold;
+        }
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .primary-button {
+            background-color: #0099ff;
+            color: white;
+        }
+        .secondary-button {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-control {
+            width: calc(100% - 22px);
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .input-group {
+            display: flex;
+        }
+        .input-group input {
+            flex: 1;
+            border-radius: 4px 0 0 4px;
+        }
+        .input-group-append {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-left: none;
+            padding: 8px 10px;
+            border-radius: 0 4px 4px 0;
+            color: #666;
+        }
+        .canvas-container {
+            border: 1px solid #ddd;
+            background-color: #fff;
+            height: 400px;
+            margin-top: 20px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            padding: 10px;
+            background-color: #f8f8f8;
+        }
+        .tool-button {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .tool-button:hover {
+            background-color: #f0f0f0;
+        }
+        .quick-start {
+            padding: 15px;
+            background-color: #f8f8ff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .quick-start a {
+            color: #0099ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .unit-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        .toggle-label {
+            margin: 0 10px;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        .language-selector {
+            display: flex;
+            align-items: center;
+        }
+        .language-selector select {
+            margin-left: 10px;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .results-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .result-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #0099ff;
+        }
+        .led-path {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 2;
+        }
+        .led-module {
+            fill: #aaa;
+        }
+        .module-count {
+            font-size: 14px;
+            text-anchor: middle;
+            fill: #333;
+        }
+        svg text {
+            fill: transparent;
+            stroke: #ddd;
+            stroke-width: 1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">Qwatt Technologies</div>
+            <div class="unit-toggle">
+                <span class="toggle-label">Imperial</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="unitToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label">Metric</span>
+                <div class="language-selector">
+                    <span>Language:</span>
+                    <select id="language">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <div class="tabs">
+            <div class="tab active">Channel Letter</div>
+            <div class="tab">Cabinet</div>
+            <div class="tab">Custom Artwork</div>
+        </div>
+        
+        <div class="button-container">
+            <button class="button primary-button" id="doItForMeBtn">Do it for me</button>
+            <button class="button secondary-button" id="pdfBtn">PDF →</button>
+            <button class="button secondary-button" id="detailsBtn">Details</button>
+        </div>
+        
+        <div class="quick-start">
+            <a href="#">Quick start for Channel Letter</a>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="layoutType">Layout Type</label>
+                <select id="layoutType" class="form-control">
+                    <option>Face Lit</option>
+                    <option>Back Lit</option>
+                    <option>Halo Lit</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="voltage">Voltage</label>
+                <select id="voltage" class="form-control">
+                    <option>24V</option>
+                    <option>12V</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="powerSupply">Power Supply</label>
+                <select id="powerSupply" class="form-control">
+                    <option>GEPS24LT-100U-NA</option>
+                    <option>GEPS12LT-100U-NA</option>
+                    <option>GEPS24LT-60U-NA</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="font">Font</label>
+                <select id="font" class="form-control">
+                    <option>72 - Black</option>
+                    <option>60 - Bold</option>
+                    <option>48 - Regular</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="series">Series</label>
+                <select id="series" class="form-control">
+                    <option>All</option>
+                    <option>MAX Series</option>
+                    <option>BASIC Series</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="powerSupplyMode">Power Supply Mode</label>
+                <select id="powerSupplyMode" class="form-control">
+                    <option>Simple Optimal</option>
+                    <option>Advanced</option>
+                    <option>Economy</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="height">Height</label>
+                <div class="input-group">
+                    <input type="number" id="height" class="form-control" value="24">
+                    <span class="input-group-append" id="heightUnit">in</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="color">Color</label>
+                <select id="color" class="form-control">
+                    <option>All</option>
+                    <option>Red</option>
+                    <option>Green</option>
+                    <option>Blue</option>
+                    <option>White</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="remotePS">Remote PS</label>
+                <input type="checkbox" id="remotePS" class="form-control" style="width: auto;">
+            </div>
+            
+            <div class="form-group">
+                <label for="depth">Depth</label>
+                <div class="input-group">
+                    <input type="number" id="depth" class="form-control" value="5">
+                    <span class="input-group-append" id="depthUnit">in</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="module">Module</label>
+                <select id="module" class="form-control">
+                    <option>Tetra MAX 24V Small 71K</option>
+                    <option>Tetra MAX 24V Medium 71K</option>
+                    <option>Tetra MAX 24V Large 71K</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="modulePitch">Module Pitch</label>
+                <div class="input-group">
+                    <input type="number" id="modulePitch" class="form-control" value="8">
+                    <span class="input-group-append" id="modulePitchUnit">in</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="strokeSpacing">Stroke Spacing</label>
+                <div class="input-group">
+                    <input type="number" id="strokeSpacing" class="form-control" value="14">
+                    <span class="input-group-append" id="strokeSpacingUnit">in</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group" style="margin-top: 20px;">
+            <label for="yourText">Your Text</label>
+            <div style="display: flex; gap: 15px;">
+                <input type="text" id="yourText" class="form-control" placeholder="Enter your text here..." style="flex: 1;">
+                <button class="button primary-button" id="populateBtn">Populate</button>
+                <button class="button secondary-button" id="clearBtn">Clear</button>
+            </div>
+        </div>
+        
+        <div class="toolbar">
+            <div class="tool-button">⟲</div>
+            <div class="tool-button">⟳</div>
+            <div class="tool-button">↑</div>
+            <div class="tool-button">↓</div>
+            <div class="tool-button">↻</div>
+            <div class="tool-button">↺</div>
+            <div class="tool-button">≡</div>
+            <div class="tool-button">⫴</div>
+            <div class="tool-button">🔍+</div>
+            <div class="tool-button">🔍-</div>
+            <div class="tool-button">👍</div>
+            <div class="tool-button">🗑️</div>
+        </div>
+        
+        <div class="canvas-container">
+            <div id="svgContainer"></div>
+        </div>
+        
+        <div class="results-panel" id="resultsPanel" style="display: none;">
+            <h3>Calculation Results</h3>
+            <div class="results-grid">
+                <div class="result-card">
+                    <div class="result-title">LED Modules Required</div>
+                    <div id="modulesCount">0</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">Total Stroke Length</div>
+                    <div id="strokeLength">0 in</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">Power Required</div>
+                    <div id="powerRequired">0 W</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">Power Supplies Needed</div>
+                    <div id="powerSuppliesCount">0</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">Recommended Module Spacing</div>
+                    <div id="recommendedSpacing">0 in</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">Circuit Run Length</div>
+                    <div id="circuitLength">0 in</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const unitToggle = document.getElementById('unitToggle');
+        const heightUnit = document.getElementById('heightUnit');
+        const depthUnit = document.getElementById('depthUnit');
+        const strokeSpacingUnit = document.getElementById('strokeSpacingUnit');
+        const modulePitchUnit = document.getElementById('modulePitchUnit');
+        const yourText = document.getElementById('yourText');
+        const svgContainer = document.getElementById('svgContainer');
+        const populateBtn = document.getElementById('populateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const modulesCount = document.getElementById('modulesCount');
+        const strokeLength = document.getElementById('strokeLength');
+        const powerRequired = document.getElementById('powerRequired');
+        const powerSuppliesCount = document.getElementById('powerSuppliesCount');
+        const recommendedSpacing = document.getElementById('recommendedSpacing');
+        const circuitLength = document.getElementById('circuitLength');
+        const height = document.getElementById('height');
+        const depth = document.getElementById('depth');
+        const strokeSpacing = document.getElementById('strokeSpacing');
+        const module = document.getElementById('module');
+        
+        // LED Module Specifications (example data)
+        const modules = {
+            "Tetra MAX 24V Small 71K": {
+                wattsPerModule: 0.4,
+                recommendedSpacingRatio: 1.8, // Spacing as ratio of character height
+                modulesPerFoot: 3,
+                size: 4 // Visual size for rendering
+            },
+            "Tetra MAX 24V Medium 71K": {
+                wattsPerModule: 0.5,
+                recommendedSpacingRatio: 2.2,
+                modulesPerFoot: 2.5,
+                size: 5
+            },
+            "Tetra MAX 24V Large 71K": {
+                wattsPerModule: 0.7,
+                recommendedSpacingRatio: 2.6,
+                modulesPerFoot: 2,
+                size: 6
+            }
+        };
+        
+        // Power Supply Specifications
+        const powerSupplies = {
+            "GEPS24LT-100U-NA": {
+                maxWatts: 100,
+                voltage: 24
+            },
+            "GEPS12LT-100U-NA": {
+                maxWatts: 100,
+                voltage: 12
+            },
+            "GEPS24LT-60U-NA": {
+                maxWatts: 60,
+                voltage: 24
+            }
+        };
+        
+        // Character stroke path data for common characters (simplified)
+        const characterPaths = {
+            'a': "M10,80 C10,50 30,30 60,30 C90,30 110,50 110,80 L110,100 M10,60 L110,60",
+            'b': "M10,10 L10,100 C10,70 30,50 60,50 C90,50 110,70 110,100 C110,70 90,50 60,50",
+            'c': "M110,30 C80,10 40,10 10,40 C10,70 40,100 110,100",
+            'd': "M110,10 L110,100 C110,70 90,50 60,50 C30,50 10,70 10,100 C10,70 30,50 60,50",
+            'e': "M110,60 L10,60 C10,85 30,100 60,100 C90,100 110,85 110,30 C80,10 40,10 10,30",
+            'f': "M40,10 C20,10 10,30 10,50 L10,100 M10,50 L60,50",
+            'g': "M110,50 L110,120 C110,140 80,140 60,140 M110,50 C110,30 90,10 60,10 C30,10 10,30 10,50 C10,70 30,90 60,90 C90,90 110,70 110,50",
+            'h': "M10,10 L10,100 M10,50 C20,40 40,30 60,30 C80,30 110,40 110,60 L110,100",
+            'i': "M10,30 L10,30 M10,50 L10,100",
+            'j': "M10,30 L10,30 M10,50 L10,120 C10,140 30,140 50,140",
+            'k': "M10,10 L10,100 M10,60 L70,30 M10,60 L70,100",
+            'l': "M10,10 L10,100",
+            'm': "M10,50 L10,100 M10,50 C10,35 20,30 30,30 C40,30 50,35 50,50 L50,100 M50,50 C50,35 60,30 70,30 C80,30 90,35 90,50 L90,100",
+            'n': "M10,50 L10,100 M10,50 C10,35 30,30 50,30 C70,30 90,35 90,50 L90,100",
+            'o': "M60,30 C30,30 10,50 10,70 C10,90 30,110 60,110 C90,110 110,90 110,70 C110,50 90,30 60,30",
+            'p': "M10,50 L10,140 M10,60 C20,40 40,30 60,30 C80,30 110,40 110,70 C110,100 80,110 60,110 C40,110 20,100 10,80",
+            'q': "M110,50 L110,140 M110,60 C100,40 80,30 60,30 C40,30 10,40 10,70 C10,100 40,110 60,110 C80,110 100,100 110,80",
+            'r': "M10,50 L10,100 M10,50 C20,30 40,30 60,30",
+            's': "M110,40 C110,10 10,10 10,50 C10,75 110,75 110,100 C110,140 10,140 10,110",
+            't': "M30,10 L30,90 C30,110 50,110 70,110 M10,50 L50,50",
+            'u': "M10,30 L10,80 C10,110 110,110 110,80 L110,30",
+            'v': "M10,30 L60,100 L110,30",
+            'w': "M10,30 L30,100 L60,50 L90,100 L110,30",
+            'x': "M10,30 L110,100 M10,100 L110,30",
+            'y': "M10,30 L60,80 L110,30 M60,80 L60,140",
+            'z': "M10,30 L110,30 L10,100 L110,100",
+            'A': "M10,100 L60,10 L110,100 M30,60 L90,60",
+            'B': "M10,10 L10,100 M10,10 C80,10 110,20 110,40 C110,60 80,60 10,60 M10,60 C80,60 110,80 110,100 C110,120 80,120 10,120",
+            'C': "M110,30 C90,10 30,10 10,40 C10,80 30,110 90,110 C110,110 110,100 110,100",
+            'D': "M10,10 L10,110 M10,10 C80,10 110,20 110,60 C110,100 80,110 10,110",
+            'E': "M110,10 L10,10 L10,110 L110,110 M10,60 L80,60",
+            'F': "M110,10 L10,10 L10,110 M10,60 L80,60",
+            'G': "M110,60 L60,60 M110,30 C90,10 30,10 10,40 C10,80 30,110 90,110 C110,110 110,80 110,80",
+            'H': "M10,10 L10,110 M110,10 L110,110 M10,60 L110,60",
+            'I': "M60,10 L60,110",
+            'J': "M110,10 L110,90 C110,120 70,120 10,90",
+            'K': "M10,10 L10,110 M10,60 L90,10 M10,60 L90,110",
+            'L': "M10,10 L10,110 L110,110",
+            'M': "M10,110 L10,10 L60,50 L110,10 L110,110",
+            'N': "M10,110 L10,10 L110,110 L110,10",
+            'O': "M60,10 C20,10 10,30 10,60 C10,90 20,110 60,110 C100,110 110,90 110,60 C110,30 100,10 60,10",
+            'P': "M10,110 L10,10 C10,10 110,10 110,50 C110,90 10,90 10,90",
+            'Q': "M60,10 C20,10 10,30 10,60 C10,90 20,110 60,110 C100,110 110,90 110,60 C110,30 100,10 60,10 M70,70 L110,110",
+            'R': "M10,110 L10,10 C10,10 110,10 110,50 C110,90 10,90 10,90 M60,90 L110,110",
+            'S': "M110,30 C110,10 10,10 10,50 C10,70 110,90 110,110 C110,130 10,130 10,110",
+            'T': "M10,10 L110,10 M60,10 L60,110",
+            'U': "M10,10 L10,80 C10,120 110,120 110,80 L110,10",
+            'V': "M10,10 L60,110 L110,10",
+            'W': "M10,10 L30,110 L60,50 L90,110 L110,10",
+            'X': "M10,10 L110,110 M10,110 L110,10",
+            'Y': "M10,10 L60,60 L110,10 M60,60 L60,110",
+            'Z': "M10,10 L110,10 L10,110 L110,110",
+            '0': "M60,10 C30,10 10,20 10,60 C10,100 30,110 60,110 C90,110 110,100 110,60 C110,20 90,10 60,10 M30,30 L90,90",
+            '1': "M60,10 L60,110 M40,30 L60,10 L60,110",
+            '2': "M10,30 C10,10 30,10 60,10 C90,10 110,30 110,50 C110,70 10,110 10,110 L110,110",
+            '3': "M10,30 C10,10 110,10 110,50 C110,70 50,70 110,70 C110,90 110,110 10,110",
+            '4': "M90,70 L10,70 L70,10 L70,110",
+            '5': "M110,10 L10,10 L10,60 L110,60 C110,110 10,110 10,90",
+            '6': "M110,10 L10,60 C10,10 110,40 110,80 C110,120 10,120 10,80",
+            '7': "M10,10 L110,10 L40,110",
+            '8': "M60,60 C20,60 10,30 10,20 C10,10 20,10 60,10 C100,10 110,10 110,20 C110,30 100,60 60,60 C20,60 10,90 10,100 C10,110 20,110 60,110 C100,110 110,110 110,100 C110,90 100,60 60,60",
+            '9': "M10,110 L110,60 C110,110 10,80 10,40 C10,0 110,0 110,40",
+            ' ': "",
+            '.': "M10,100 L10,110 L20,110 L20,100 L10,100",
+            ',': "M10,100 L10,120 L20,120",
+            '!': "M10,10 L10,80 M10,100 L10,110",
+            '?': "M10,30 C10,10 110,10 110,60 C110,90 60,80 60,100 M60,120 L60,130",
+            ':': "M10,40 L10,50 L20,50 L20,40 L10,40 M10,80 L10,90 L20,90 L20,80 L10,80",
+            ';': "M10,40 L10,50 L20,50 L20,40 L10,40 M10,80 L10,100 L20,100",
+            '-': "M10,60 L50,60",
+            '_': "M10,110 L110,110",
+            '+': "M10,60 L110,60 M60,10 L60,110",
+            '=': "M10,40 L110,40 M10,80 L110,80",
+            '/': "M10,110 L110,10",
+            '\\': "M10,10 L110,110",
+            '|': "M60,10 L60,110",
+            '(': "M60,10 C30,30 30,90 60,110",
+            ')': "M10,10 C40,30 40,90 10,110",
+            '{': "M60,10 C30,30 30,50 10,60 C30,70 30,90 60,110",
+            '}': "M10,10 C40,30 40,50 60,60 C40,70 40,90 10,110",
+            '[': "M60,10 L10,10 L10,110 L60,110",
+            ']': "M10,10 L60,10 L60,110 L10,110",
+            '<': "M60,10 L10,60 L60,110",
+            '>': "M10,10 L60,60 L10,110",
+            '^': "M10,60 L60,10 L110,60",
+            '~': "M10,60 C30,40 70,80 110,60",
+            '`': "M10,10 L30,30",
+            '"': "M10,10 L10,30 M30,10 L30,30",
+            "'": "M10,10 L10,30"
+        };
+
+        // Function to render text as SVG paths
+        function renderTextAsSVG(text) {
+            svgContainer.innerHTML = ''; // Clear the SVG container
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("width", "100%");
+            svg.setAttribute("height", "100%");
+
+            let xOffset = 0; // Horizontal offset for each character
+            const characterSpacing = 20; // Space between characters
+
+            for (const char of text) {
+                const pathData = characterPaths[char] || ''; // Get path data for the character
+                if (pathData) {
+                    const path = document.createElementNS(svgNS, "path");
+                    path.setAttribute("d", pathData);
+                    path.setAttribute("class", "led-path");
+                    path.setAttribute("transform", `translate(${xOffset}, 0)`);
+                    svg.appendChild(path);
+                    xOffset += 120 + characterSpacing; // Adjust offset for the next character
+                }
+            }
+
+            svg.setAttribute("viewBox", `0 0 ${xOffset} 200`); // Adjust viewBox dynamically
+            svgContainer.appendChild(svg); // Add the SVG to the container
+        }
+
+        // Event listener for the "Populate" button
+        populateBtn.addEventListener("click", () => {
+            const text = yourText.value.trim(); // Get the input text
+            if (text) {
+                renderTextAsSVG(text);
+            }
+        });
+
+        // Event listener for the "Clear" button
+        clearBtn.addEventListener("click", () => {
+            yourText.value = ''; // Clear the input field
+            svgContainer.innerHTML = ''; // Clear the SVG container
+        });
+    </script>
+</body>
+</html>
