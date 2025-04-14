@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LED Channel Letter Configurator</title>
+    <title>LED Channel Letter Configurator with Editor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             color: #333;
+            display: flex;
         }
         header {
             background-color: #f8f8f8;
@@ -100,16 +101,30 @@
             border-radius: 0 4px 4px 0;
             color: #666;
         }
+        .main-container {
+            display: flex;
+            width: 100%;
+        }
         .canvas-container {
             border: 1px solid #ddd;
             background-color: #fff;
+            width: calc(100% - 300px);
             height: 400px;
             margin-top: 20px;
-            padding: 20px;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: auto;
+        }
+        #svgContainer {
+            width: 100%;
+            height: 100%;
+        }
+        #svgContainer svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
         .toolbar {
             display: flex;
@@ -228,21 +243,43 @@
         }
         .led-path {
             fill: none;
-            stroke: #ccc;
-            stroke-width: 2;
+            stroke: #333;
+            stroke-width: 3;
+            cursor: move;
         }
-        .led-module {
-            fill: #aaa;
+        .led-strip {
+            fill: #666;
+            stroke: none;
+            cursor: move;
         }
         .module-count {
             font-size: 14px;
             text-anchor: middle;
             fill: #333;
         }
-        svg text {
-            fill: transparent;
-            stroke: #ddd;
-            stroke-width: 1;
+        .editor-panel {
+            width: 300px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-left: 1px solid #ddd;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+        .editor-group {
+            margin-bottom: 15px;
+        }
+        .editor-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .editor-group input[type="color"],
+        .editor-group input[type="number"],
+        .editor-group select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -269,190 +306,209 @@
         </div>
     </header>
     
-    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-        <div class="tabs">
-            <div class="tab active">Channel Letter</div>
-            <div class="tab">Cabinet</div>
-            <div class="tab">Custom Artwork</div>
+    <div class="main-container">
+        <div class="container" style="max-width: 900px; margin: 0 auto; padding: 20px; flex: 1;">
+            <div class="tabs">
+                <div class="tab active">Channel Letter</div>
+                <div class="tab">Cabinet</div>
+                <div class="tab">Custom Artwork</div>
+            </div>
+            
+            <div class="button-container">
+                <button class="button primary-button" id="doItForMeBtn">Do it for me</button>
+                <button class="button secondary-button" id="pdfBtn">PDF →</button>
+                <button class="button secondary-button" id="detailsBtn">Details</button>
+            </div>
+            
+            <div class="quick-start">
+                <a href="#">Quick start for Channel Letter</a>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="layoutType">Layout Type</label>
+                    <select id="layoutType" class="form-control">
+                        <option>Face Lit</option>
+                        <option>Back Lit</option>
+                        <option>Halo Lit</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="voltage">Voltage</label>
+                    <select id="voltage" class="form-control">
+                        <option>24V</option>
+                        <option>12V</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="powerSupply">Power Supply</label>
+                    <select id="powerSupply" class="form-control">
+                        <option>GEPS24LT-100U-NA</option>
+                        <option>GEPS12LT-100U-NA</option>
+                        <option>GEPS24LT-60U-NA</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="font">Font</label>
+                    <select id="font" class="form-control">
+                        <option>72 - Black</option>
+                        <option>60 - Bold</option>
+                        <option>48 - Regular</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="series">Series</label>
+                    <select id="series" class="form-control">
+                        <option>All</option>
+                        <option>MAX Series</option>
+                        <option>BASIC Series</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="powerSupplyMode">Power Supply Mode</label>
+                    <select id="powerSupplyMode" class="form-control">
+                        <option>Simple Optimal</option>
+                        <option>Advanced</option>
+                        <option>Economy</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="height">Height</label>
+                    <div class="input-group">
+                        <input type="number" id="height" class="form-control" value="24">
+                        <span class="input-group-append" id="heightUnit">in</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="color">Color</label>
+                    <select id="color" class="form-control">
+                        <option>All</option>
+                        <option>Red</option>
+                        <option>Green</option>
+                        <option>Blue</option>
+                        <option>White</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="remotePS">Remote PS</label>
+                    <input type="checkbox" id="remotePS" class="form-control" style="width: auto;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="depth">Depth</label>
+                    <div class="input-group">
+                        <input type="number" id="depth" class="form-control" value="5">
+                        <span class="input-group-append" id="depthUnit">in</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="module">Module</label>
+                    <select id="module" class="form-control">
+                        <option>Tetra MAX 24V Small 71K</option>
+                        <option>Tetra MAX 24V Medium 71K</option>
+                        <option>Tetra MAX 24V Large 71K</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modulePitch">Module Pitch</label>
+                    <div class="input-group">
+                        <input type="number" id="modulePitch" class="form-control" value="8">
+                        <span class="input-group-append" id="modulePitchUnit">in</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="strokeSpacing">Stroke Spacing</label>
+                    <div class="input-group">
+                        <input type="number" id="strokeSpacing" class="form-control" value="14">
+                        <span class="input-group-append" id="strokeSpacingUnit">in</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="yourText">Your Text</label>
+                <div style="display: flex; gap: 15px;">
+                    <input type="text" id="yourText" class="form-control" placeholder="Enter your text here..." style="flex: 1;">
+                    <button class="button primary-button" id="populateBtn">Populate</button>
+                    <button class="button secondary-button" id="clearBtn">Clear</button>
+                </div>
+            </div>
+            
+            <div class="toolbar">
+                <div class="tool-button" id="rotateLeft">⟲</div>
+                <div class="tool-button" id="rotateRight">⟳</div>
+                <div class="tool-button" id="moveUp">↑</div>
+                <div class="tool-button" id="moveDown">↓</div>
+                <div class="tool-button" id="scaleUp">↻</div>
+                <div class="tool-button" id="scaleDown">↺</div>
+                <div class="tool-button" id="increaseLeds">🔍+</div>
+                <div class="tool-button" id="decreaseLeds">🔍-</div>
+                <div class="tool-button" id="clearCanvas">🗑️</div>
+            </div>
+            
+            <div class="canvas-container">
+                <div id="svgContainer"></div>
+            </div>
+            
+            <div class="results-panel" id="resultsPanel" style="display: none;">
+                <h3>Calculation Results</h3>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-title">LED Modules Required</div>
+                        <div id="modulesCount">0</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-title">Total Stroke Length</div>
+                        <div id="strokeLength">0 in</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-title">Power Required</div>
+                        <div id="powerRequired">0 W</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-title">Power Supplies Needed</div>
+                        <div id="powerSuppliesCount">0</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-title">Recommended Module Spacing</div>
+                        <div id="recommendedSpacing">0 in</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-title">Circuit Run Length</div>
+                        <div id="circuitLength">0 in</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="button-container">
-            <button class="button primary-button" id="doItForMeBtn">Do it for me</button>
-            <button class="button secondary-button" id="pdfBtn">PDF →</button>
-            <button class="button secondary-button" id="detailsBtn">Details</button>
-        </div>
-        
-        <div class="quick-start">
-            <a href="#">Quick start for Channel Letter</a>
-        </div>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                <label for="layoutType">Layout Type</label>
-                <select id="layoutType" class="form-control">
-                    <option>Face Lit</option>
-                    <option>Back Lit</option>
-                    <option>Halo Lit</option>
-                </select>
+
+        <div class="editor-panel">
+            <h3>Editor</h3>
+            <div class="editor-group">
+                <label for="strokeColor">Stroke Color</label>
+                <input type="color" id="strokeColor" value="#333333">
             </div>
-            
-            <div class="form-group">
-                <label for="voltage">Voltage</label>
-                <select id="voltage" class="form-control">
-                    <option>24V</option>
-                    <option>12V</option>
-                </select>
+            <div class="editor-group">
+                <label for="strokeWidth">Stroke Width</label>
+                <input type="number" id="strokeWidth" value="3" min="1" max="10">
             </div>
-            
-            <div class="form-group">
-                <label for="powerSupply">Power Supply</label>
-                <select id="powerSupply" class="form-control">
-                    <option>GEPS24LT-100U-NA</option>
-                    <option>GEPS12LT-100U-NA</option>
-                    <option>GEPS24LT-60U-NA</option>
-                </select>
+            <div class="editor-group">
+                <label for="ledColor">LED Color</label>
+                <input type="color" id="ledColor" value="#666666">
             </div>
-            
-            <div class="form-group">
-                <label for="font">Font</label>
-                <select id="font" class="form-control">
-                    <option>72 - Black</option>
-                    <option>60 - Bold</option>
-                    <option>48 - Regular</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="series">Series</label>
-                <select id="series" class="form-control">
-                    <option>All</option>
-                    <option>MAX Series</option>
-                    <option>BASIC Series</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="powerSupplyMode">Power Supply Mode</label>
-                <select id="powerSupplyMode" class="form-control">
-                    <option>Simple Optimal</option>
-                    <option>Advanced</option>
-                    <option>Economy</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="height">Height</label>
-                <div class="input-group">
-                    <input type="number" id="height" class="form-control" value="24">
-                    <span class="input-group-append" id="heightUnit">in</span>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="color">Color</label>
-                <select id="color" class="form-control">
-                    <option>All</option>
-                    <option>Red</option>
-                    <option>Green</option>
-                    <option>Blue</option>
-                    <option>White</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="remotePS">Remote PS</label>
-                <input type="checkbox" id="remotePS" class="form-control" style="width: auto;">
-            </div>
-            
-            <div class="form-group">
-                <label for="depth">Depth</label>
-                <div class="input-group">
-                    <input type="number" id="depth" class="form-control" value="5">
-                    <span class="input-group-append" id="depthUnit">in</span>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="module">Module</label>
-                <select id="module" class="form-control">
-                    <option>Tetra MAX 24V Small 71K</option>
-                    <option>Tetra MAX 24V Medium 71K</option>
-                    <option>Tetra MAX 24V Large 71K</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="modulePitch">Module Pitch</label>
-                <div class="input-group">
-                    <input type="number" id="modulePitch" class="form-control" value="8">
-                    <span class="input-group-append" id="modulePitchUnit">in</span>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="strokeSpacing">Stroke Spacing</label>
-                <div class="input-group">
-                    <input type="number" id="strokeSpacing" class="form-control" value="14">
-                    <span class="input-group-append" id="strokeSpacingUnit">in</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="form-group" style="margin-top: 20px;">
-            <label for="yourText">Your Text</label>
-            <div style="display: flex; gap: 15px;">
-                <input type="text" id="yourText" class="form-control" placeholder="Enter your text here..." style="flex: 1;">
-                <button class="button primary-button" id="populateBtn">Populate</button>
-                <button class="button secondary-button" id="clearBtn">Clear</button>
-            </div>
-        </div>
-        
-        <div class="toolbar">
-            <div class="tool-button">⟲</div>
-            <div class="tool-button">⟳</div>
-            <div class="tool-button">↑</div>
-            <div class="tool-button">↓</div>
-            <div class="tool-button">↻</div>
-            <div class="tool-button">↺</div>
-            <div class="tool-button">≡</div>
-            <div class="tool-button">⫴</div>
-            <div class="tool-button">🔍+</div>
-            <div class="tool-button">🔍-</div>
-            <div class="tool-button">👍</div>
-            <div class="tool-button">🗑️</div>
-        </div>
-        
-        <div class="canvas-container">
-            <div id="svgContainer"></div>
-        </div>
-        
-        <div class="results-panel" id="resultsPanel" style="display: none;">
-            <h3>Calculation Results</h3>
-            <div class="results-grid">
-                <div class="result-card">
-                    <div class="result-title">LED Modules Required</div>
-                    <div id="modulesCount">0</div>
-                </div>
-                <div class="result-card">
-                    <div class="result-title">Total Stroke Length</div>
-                    <div id="strokeLength">0 in</div>
-                </div>
-                <div class="result-card">
-                    <div class="result-title">Power Required</div>
-                    <div id="powerRequired">0 W</div>
-                </div>
-                <div class="result-card">
-                    <div class="result-title">Power Supplies Needed</div>
-                    <div id="powerSuppliesCount">0</div>
-                </div>
-                <div class="result-card">
-                    <div class="result-title">Recommended Module Spacing</div>
-                    <div id="recommendedSpacing">0 in</div>
-                </div>
-                <div class="result-card">
-                    <div class="result-title">Circuit Run Length</div>
-                    <div id="circuitLength">0 in</div>
-                </div>
+            <div class="editor-group">
+                <label for="ledCount">LED Count per Character</label>
+                <input type="number" id="ledCount" value="5" min="1" max="10">
             </div>
         </div>
     </div>
@@ -479,169 +535,250 @@
         const depth = document.getElementById('depth');
         const strokeSpacing = document.getElementById('strokeSpacing');
         const module = document.getElementById('module');
-        
+
+        // Toolbar buttons
+        const rotateLeftBtn = document.getElementById('rotateLeft');
+        const rotateRightBtn = document.getElementById('rotateRight');
+        const moveUpBtn = document.getElementById('moveUp');
+        const moveDownBtn = document.getElementById('moveDown');
+        const scaleUpBtn = document.getElementById('scaleUp');
+        const scaleDownBtn = document.getElementById('scaleDown');
+        const increaseLedsBtn = document.getElementById('increaseLeds');
+        const decreaseLedsBtn = document.getElementById('decreaseLeds');
+        const clearCanvasBtn = document.getElementById('clearCanvas');
+
+        // Editor controls
+        const strokeColorInput = document.getElementById('strokeColor');
+        const strokeWidthInput = document.getElementById('strokeWidth');
+        const ledColorInput = document.getElementById('ledColor');
+        const ledCountInput = document.getElementById('ledCount');
+
+        // Transformation state
+        let rotation = 0;
+        let translateY = 0;
+        let scale = 1;
+        let ledCountPerChar = 5;
+
+        // Dragging state
+        let isDragging = false;
+        let currentElement = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
         // LED Module Specifications (example data)
         const modules = {
-            "Tetra MAX 24V Small 71K": {
-                wattsPerModule: 0.4,
-                recommendedSpacingRatio: 1.8, // Spacing as ratio of character height
-                modulesPerFoot: 3,
-                size: 4 // Visual size for rendering
-            },
-            "Tetra MAX 24V Medium 71K": {
-                wattsPerModule: 0.5,
-                recommendedSpacingRatio: 2.2,
-                modulesPerFoot: 2.5,
-                size: 5
-            },
-            "Tetra MAX 24V Large 71K": {
-                wattsPerModule: 0.7,
-                recommendedSpacingRatio: 2.6,
-                modulesPerFoot: 2,
-                size: 6
-            }
-        };
-        
-        // Power Supply Specifications
-        const powerSupplies = {
-            "GEPS24LT-100U-NA": {
-                maxWatts: 100,
-                voltage: 24
-            },
-            "GEPS12LT-100U-NA": {
-                maxWatts: 100,
-                voltage: 12
-            },
-            "GEPS24LT-60U-NA": {
-                maxWatts: 60,
-                voltage: 24
-            }
-        };
-        
-        // Character stroke path data for common characters (simplified)
-        const characterPaths = {
-            'a': "M10,80 C10,50 30,30 60,30 C90,30 110,50 110,80 L110,100 M10,60 L110,60",
-            'b': "M10,10 L10,100 C10,70 30,50 60,50 C90,50 110,70 110,100 C110,70 90,50 60,50",
-            'c': "M110,30 C80,10 40,10 10,40 C10,70 40,100 110,100",
-            'd': "M110,10 L110,100 C110,70 90,50 60,50 C30,50 10,70 10,100 C10,70 30,50 60,50",
-            'e': "M110,60 L10,60 C10,85 30,100 60,100 C90,100 110,85 110,30 C80,10 40,10 10,30",
-            'f': "M40,10 C20,10 10,30 10,50 L10,100 M10,50 L60,50",
-            'g': "M110,50 L110,120 C110,140 80,140 60,140 M110,50 C110,30 90,10 60,10 C30,10 10,30 10,50 C10,70 30,90 60,90 C90,90 110,70 110,50",
-            'h': "M10,10 L10,100 M10,50 C20,40 40,30 60,30 C80,30 110,40 110,60 L110,100",
-            'i': "M10,30 L10,30 M10,50 L10,100",
-            'j': "M10,30 L10,30 M10,50 L10,120 C10,140 30,140 50,140",
-            'k': "M10,10 L10,100 M10,60 L70,30 M10,60 L70,100",
-            'l': "M10,10 L10,100",
-            'm': "M10,50 L10,100 M10,50 C10,35 20,30 30,30 C40,30 50,35 50,50 L50,100 M50,50 C50,35 60,30 70,30 C80,30 90,35 90,50 L90,100",
-            'n': "M10,50 L10,100 M10,50 C10,35 30,30 50,30 C70,30 90,35 90,50 L90,100",
-            'o': "M60,30 C30,30 10,50 10,70 C10,90 30,110 60,110 C90,110 110,90 110,70 C110,50 90,30 60,30",
-            'p': "M10,50 L10,140 M10,60 C20,40 40,30 60,30 C80,30 110,40 110,70 C110,100 80,110 60,110 C40,110 20,100 10,80",
-            'q': "M110,50 L110,140 M110,60 C100,40 80,30 60,30 C40,30 10,40 10,70 C10,100 40,110 60,110 C80,110 100,100 110,80",
-            'r': "M10,50 L10,100 M10,50 C20,30 40,30 60,30",
-            's': "M110,40 C110,10 10,10 10,50 C10,75 110,75 110,100 C110,140 10,140 10,110",
-            't': "M30,10 L30,90 C30,110 50,110 70,110 M10,50 L50,50",
-            'u': "M10,30 L10,80 C10,110 110,110 110,80 L110,30",
-            'v': "M10,30 L60,100 L110,30",
-            'w': "M10,30 L30,100 L60,50 L90,100 L110,30",
-            'x': "M10,30 L110,100 M10,100 L110,30",
-            'y': "M10,30 L60,80 L110,30 M60,80 L60,140",
-            'z': "M10,30 L110,30 L10,100 L110,100",
-            'A': "M10,100 L60,10 L110,100 M30,60 L90,60",
-            'B': "M10,10 L10,100 M10,10 C80,10 110,20 110,40 C110,60 80,60 10,60 M10,60 C80,60 110,80 110,100 C110,120 80,120 10,120",
-            'C': "M110,30 C90,10 30,10 10,40 C10,80 30,110 90,110 C110,110 110,100 110,100",
-            'D': "M10,10 L10,110 M10,10 C80,10 110,20 110,60 C110,100 80,110 10,110",
-            'E': "M110,10 L10,10 L10,110 L110,110 M10,60 L80,60",
-            'F': "M110,10 L10,10 L10,110 M10,60 L80,60",
-            'G': "M110,60 L60,60 M110,30 C90,10 30,10 10,40 C10,80 30,110 90,110 C110,110 110,80 110,80",
-            'H': "M10,10 L10,110 M110,10 L110,110 M10,60 L110,60",
-            'I': "M60,10 L60,110",
-            'J': "M110,10 L110,90 C110,120 70,120 10,90",
-            'K': "M10,10 L10,110 M10,60 L90,10 M10,60 L90,110",
-            'L': "M10,10 L10,110 L110,110",
-            'M': "M10,110 L10,10 L60,50 L110,10 L110,110",
-            'N': "M10,110 L10,10 L110,110 L110,10",
-            'O': "M60,10 C20,10 10,30 10,60 C10,90 20,110 60,110 C100,110 110,90 110,60 C110,30 100,10 60,10",
-            'P': "M10,110 L10,10 C10,10 110,10 110,50 C110,90 10,90 10,90",
-            'Q': "M60,10 C20,10 10,30 10,60 C10,90 20,110 60,110 C100,110 110,90 110,60 C110,30 100,10 60,10 M70,70 L110,110",
-            'R': "M10,110 L10,10 C10,10 110,10 110,50 C110,90 10,90 10,90 M60,90 L110,110",
-            'S': "M110,30 C110,10 10,10 10,50 C10,70 110,90 110,110 C110,130 10,130 10,110",
-            'T': "M10,10 L110,10 M60,10 L60,110",
-            'U': "M10,10 L10,80 C10,120 110,120 110,80 L110,10",
-            'V': "M10,10 L60,110 L110,10",
-            'W': "M10,10 L30,110 L60,50 L90,110 L110,10",
-            'X': "M10,10 L110,110 M10,110 L110,10",
-            'Y': "M10,10 L60,60 L110,10 M60,60 L60,110",
-            'Z': "M10,10 L110,10 L10,110 L110,110",
-            '0': "M60,10 C30,10 10,20 10,60 C10,100 30,110 60,110 C90,110 110,100 110,60 C110,20 90,10 60,10 M30,30 L90,90",
-            '1': "M60,10 L60,110 M40,30 L60,10 L60,110",
-            '2': "M10,30 C10,10 30,10 60,10 C90,10 110,30 110,50 C110,70 10,110 10,110 L110,110",
-            '3': "M10,30 C10,10 110,10 110,50 C110,70 50,70 110,70 C110,90 110,110 10,110",
-            '4': "M90,70 L10,70 L70,10 L70,110",
-            '5': "M110,10 L10,10 L10,60 L110,60 C110,110 10,110 10,90",
-            '6': "M110,10 L10,60 C10,10 110,40 110,80 C110,120 10,120 10,80",
-            '7': "M10,10 L110,10 L40,110",
-            '8': "M60,60 C20,60 10,30 10,20 C10,10 20,10 60,10 C100,10 110,10 110,20 C110,30 100,60 60,60 C20,60 10,90 10,100 C10,110 20,110 60,110 C100,110 110,110 110,100 C110,90 100,60 60,60",
-            '9': "M10,110 L110,60 C110,110 10,80 10,40 C10,0 110,0 110,40",
-            ' ': "",
-            '.': "M10,100 L10,110 L20,110 L20,100 L10,100",
-            ',': "M10,100 L10,120 L20,120",
-            '!': "M10,10 L10,80 M10,100 L10,110",
-            '?': "M10,30 C10,10 110,10 110,60 C110,90 60,80 60,100 M60,120 L60,130",
-            ':': "M10,40 L10,50 L20,50 L20,40 L10,40 M10,80 L10,90 L20,90 L20,80 L10,80",
-            ';': "M10,40 L10,50 L20,50 L20,40 L10,40 M10,80 L10,100 L20,100",
-            '-': "M10,60 L50,60",
-            '_': "M10,110 L110,110",
-            '+': "M10,60 L110,60 M60,10 L60,110",
-            '=': "M10,40 L110,40 M10,80 L110,80",
-            '/': "M10,110 L110,10",
-            '\\': "M10,10 L110,110",
-            '|': "M60,10 L60,110",
-            '(': "M60,10 C30,30 30,90 60,110",
-            ')': "M10,10 C40,30 40,90 10,110",
-            '{': "M60,10 C30,30 30,50 10,60 C30,70 30,90 60,110",
-            '}': "M10,10 C40,30 40,50 60,60 C40,70 40,90 10,110",
-            '[': "M60,10 L10,10 L10,110 L60,110",
-            ']': "M10,10 L60,10 L60,110 L10,110",
-            '<': "M60,10 L10,60 L60,110",
-            '>': "M10,10 L60,60 L10,110",
-            '^': "M10,60 L60,10 L110,60",
-            '~': "M10,60 C30,40 70,80 110,60",
-            '`': "M10,10 L30,30",
-            '"': "M10,10 L10,30 M30,10 L30,30",
-            "'": "M10,10 L10,30"
+            "Tetra MAX 24V Small 71K": { wattsPerModule: 0.4, recommendedSpacingRatio: 1.8, modulesPerFoot: 3, size: 4 },
+            "Tetra MAX 24V Medium 71K": { wattsPerModule: 0.5, recommendedSpacingRatio: 2.2, modulesPerFoot: 2.5, size: 5 },
+            "Tetra MAX 24V Large 71K": { wattsPerModule: 0.7, recommendedSpacingRatio: 2.6, modulesPerFoot: 2, size: 6 }
         };
 
-        // Function to render text as SVG paths
+        // Power Supply Specifications
+        const powerSupplies = {
+            "GEPS24LT-100U-NA": { maxWatts: 100, voltage: 24 },
+            "GEPS12LT-100U-NA": { maxWatts: 100, voltage: 12 },
+            "GEPS24LT-60U-NA": { maxWatts: 60, voltage: 24 }
+        };
+
+        // Updated character paths to match a bold, blocky font style
+        const characterPaths = {
+            'a': "M20,100 L20,40 L40,40 L40,60 L60,60 L60,40 L80,40 L80,100 L60,100 L60,80 L40,80 L40,100 Z",
+            'b': "M20,20 L20,100 L60,100 L60,80 L40,80 L40,60 L60,60 L60,40 L40,40 L40,20 Z",
+            'c': "M80,40 C80,20 60,20 40,40 C40,60 60,60 80,60 C80,80 60,80 40,80 C40,100 60,100 80,100",
+            'd': "M80,20 L80,100 L40,100 L40,80 L60,80 L60,40 L40,40 L40,20 Z",
+            'e': "M80,20 L20,20 L20,100 L80,100 L80,80 L40,80 L40,60 L60,60 L60,40 L40,40 L40,20 Z",
+            'f': "M40,20 L40,100 L20,100 L20,20 L60,20 L60,40 L40,40 Z",
+            'g': "M80,40 C80,20 60,20 40,20 C20,20 20,40 20,60 L60,60 L60,40 L40,40 L40,80 L60,80 L60,100 L20,100 C20,120 40,120 60,120",
+            'h': "M20,20 L20,100 L40,100 L40,60 L60,60 L60,100 L80,100 L80,20 L60,20 L60,40 L40,40 L40,20 Z",
+            'i': "M40,20 L40,100 L60,100 L60,20 Z M40,0 L60,0 L60,10 L40,10 Z",
+            'j': "M60,20 L60,100 C60,120 40,120 20,120 L20,100 L40,100 L40,20 Z M60,0 L60,10 L40,10 L40,0 Z",
+            'k': "M20,20 L20,100 L40,100 L40,60 L60,40 L80,20 L60,60 L40,60 L40,20 Z",
+            'l': "M20,20 L20,100 L40,100 L40,20 Z",
+            'm': "M20,20 L20,100 L40,100 L40,60 L60,60 L60,100 L80,100 L80,60 L100,60 L100,100 L120,100 L120,20 L100,20 L100,40 L80,40 L80,20 L60,20 L60,40 L40,40 L40,20 Z",
+            'n': "M20,20 L20,100 L40,100 L60,40 L60,100 L80,100 L80,20 L60,20 L40,60 L40,20 Z",
+            'o': "M40,20 C20,20 20,40 20,60 C20,80 20,100 40,100 C60,100 80,100 80,60 C80,40 60,20 40,20 Z",
+            'p': "M20,20 L20,100 L40,100 L40,60 L60,60 L60,40 L40,40 L40,20 Z",
+            'q': "M80,20 L80,100 L60,100 L60,60 L40,60 L40,40 L60,40 L60,20 Z M60,100 L80,120",
+            'r': "M20,20 L20,100 L40,100 L40,60 L60,40 L80,20 L60,60 L40,60 L40,20 Z",
+            's': "M80,20 L20,20 L20,40 L60,40 L60,60 L20,60 L20,80 L80,80 L80,100 L20,100 L20,120 L80,120",
+            't': "M20,20 L80,20 L80,40 L60,40 L60,100 L40,100 L40,40 L20,40 Z",
+            'u': "M20,20 L20,80 L40,80 L40,100 L60,100 L60,80 L80,80 L80,20 L60,20 L60,60 L40,60 L40,20 Z",
+            'v': "M20,20 L40,100 L60,100 L80,20 L60,20 L40,80 L40,20 Z",
+            'w': "M20,20 L30,100 L50,100 L60,40 L70,100 L90,100 L100,20 L80,20 L70,80 L60,20 L50,80 L40,20 Z",
+            'x': "M20,20 L80,100 L60,100 L40,60 L60,20 Z M80,20 L20,100 L40,100 L60,60 L40,20 Z",
+            'y': "M20,20 L40,60 L60,20 L80,20 L60,60 L60,100 L40,100 L40,60 Z",
+            'z': "M20,20 L80,20 L80,40 L40,60 L80,80 L80,100 L20,100 L20,80 L60,60 L20,40 Z",
+            ' ': ""
+        };
+
+        // Function to place LED strips inside the path
+        function placeLedStrips(path, svg, ledCount, xOffset, charGroup) {
+            const pathLength = path.getTotalLength();
+            const spacing = pathLength / (ledCount + 1);
+            const strokeWidth = parseFloat(strokeWidthInput.value) || 3;
+            const offsetDistance = strokeWidth * 2; // Move LEDs inward by twice the stroke width
+
+            for (let i = 1; i <= ledCount; i++) {
+                const position = i * spacing;
+                const point = path.getPointAtLength(position);
+                const tangent = getTangentAtLength(path, position);
+                const angle = Math.atan2(tangent.y, tangent.x) * (180 / Math.PI);
+
+                // Calculate the normal direction (perpendicular to the tangent)
+                const magnitude = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
+                const normalX = -tangent.y / magnitude;
+                const normalY = tangent.x / magnitude;
+
+                // Offset the position inward
+                const offsetX = normalX * offsetDistance;
+                const offsetY = normalY * offsetDistance;
+                const newX = point.x + offsetX;
+                const newY = point.y + offsetY;
+
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", newX + xOffset - 5);
+                rect.setAttribute("y", newY - 1);
+                rect.setAttribute("width", 10);
+                rect.setAttribute("height", 2);
+                rect.setAttribute("class", "led-strip");
+                rect.setAttribute("transform", `rotate(${angle}, ${newX + xOffset}, ${newY})`);
+                rect.setAttribute("data-x", newX + xOffset);
+                rect.setAttribute("data-y", newY);
+                charGroup.appendChild(rect);
+
+                // Add drag event listeners to LED strips
+                rect.addEventListener("mousedown", startDragging);
+            }
+        }
+
+        // Helper function to calculate the tangent at a point on the path
+        function getTangentAtLength(path, length) {
+            const point1 = path.getPointAtLength(length - 0.01);
+            const point2 = path.getPointAtLength(length + 0.01);
+            return {
+                x: point2.x - point1.x,
+                y: point2.y - point1.y
+            };
+        }
+
+        // Function to render text as SVG paths with LED strips
         function renderTextAsSVG(text) {
-            svgContainer.innerHTML = ''; // Clear the SVG container
+            svgContainer.innerHTML = '';
 
             const svgNS = "http://www.w3.org/2000/svg";
             const svg = document.createElementNS(svgNS, "svg");
-            svg.setAttribute("width", "100%");
-            svg.setAttribute("height", "100%");
+            svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
-            let xOffset = 0; // Horizontal offset for each character
-            const characterSpacing = 20; // Space between characters
+            const group = document.createElementNS(svgNS, "g");
+            group.setAttribute("transform", `translate(0, ${translateY}) rotate(${rotation}) scale(${scale})`);
+            svg.appendChild(group);
 
-            for (const char of text) {
-                const pathData = characterPaths[char] || ''; // Get path data for the character
+            let xOffset = 0;
+            const characterSpacing = 20;
+            const charWidth = 100 + characterSpacing;
+
+            for (const char of text.toLowerCase()) {
+                const pathData = characterPaths[char] || '';
                 if (pathData) {
+                    const charGroup = document.createElementNS(svgNS, "g");
+                    charGroup.setAttribute("data-x", xOffset);
+                    charGroup.setAttribute("data-y", 0);
+                    group.appendChild(charGroup);
+
                     const path = document.createElementNS(svgNS, "path");
                     path.setAttribute("d", pathData);
                     path.setAttribute("class", "led-path");
                     path.setAttribute("transform", `translate(${xOffset}, 0)`);
-                    svg.appendChild(path);
-                    xOffset += 120 + characterSpacing; // Adjust offset for the next character
+                    charGroup.appendChild(path);
+
+                    // Place LED strips inside the path
+                    placeLedStrips(path, svg, ledCountPerChar, xOffset, charGroup);
+
+                    // Add drag event listeners to the character group
+                    charGroup.addEventListener("mousedown", startDragging);
+
+                    xOffset += charWidth;
                 }
             }
 
-            svg.setAttribute("viewBox", `0 0 ${xOffset} 200`); // Adjust viewBox dynamically
-            svgContainer.appendChild(svg); // Add the SVG to the container
+            // Calculate the viewBox based on the content size
+            const contentWidth = xOffset;
+            const contentHeight = 120;
+            const canvasHeightPx = 400;
+            const targetHeightInches = 35;
+            const pixelsPerInch = canvasHeightPx / targetHeightInches;
+            const scaledHeight = contentHeight * pixelsPerInch;
+            const scaledWidth = contentWidth * pixelsPerInch;
+            svg.setAttribute("viewBox", `0 0 ${contentWidth} ${contentHeight}`);
+
+            svgContainer.appendChild(svg);
+
+            // Update styles based on editor controls
+            updateStyles();
         }
+
+        // Function to update styles based on editor controls
+        function updateStyles() {
+            const paths = document.querySelectorAll(".led-path");
+            const leds = document.querySelectorAll(".led-strip");
+
+            paths.forEach(path => {
+                path.setAttribute("stroke", strokeColorInput.value);
+                path.setAttribute("stroke-width", strokeWidthInput.value);
+            });
+
+            leds.forEach(led => {
+                led.setAttribute("fill", ledColorInput.value);
+            });
+
+            ledCountPerChar = parseInt(ledCountInput.value);
+        }
+
+        // Dragging functionality
+        function startDragging(e) {
+            isDragging = true;
+            currentElement = e.target.closest("g") || e.target;
+            const transform = currentElement.getAttribute("transform") || "";
+            const translateMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+            offsetX = translateMatch ? parseFloat(translateMatch[1]) : parseFloat(currentElement.getAttribute("data-x") || 0);
+            offsetY = translateMatch ? parseFloat(translateMatch[2]) : parseFloat(currentElement.getAttribute("data-y") || 0);
+            offsetX -= e.clientX;
+            offsetY -= e.clientY;
+        }
+
+        function dragElement(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            const newX = e.clientX + offsetX;
+            const newY = e.clientY + offsetY;
+
+            if (currentElement.tagName === "rect") {
+                // For LED strips, update position directly
+                currentElement.setAttribute("x", newX - 5);
+                currentElement.setAttribute("y", newY - 1);
+                currentElement.setAttribute("data-x", newX);
+                currentElement.setAttribute("data-y", newY);
+                // Reset rotation to avoid conflicts
+                currentElement.setAttribute("transform", `rotate(0, ${newX}, ${newY})`);
+            } else {
+                // For character groups, update the transform
+                currentElement.setAttribute("transform", `translate(${newX}, ${newY})`);
+                currentElement.setAttribute("data-x", newX);
+                currentElement.setAttribute("data-y", newY);
+            }
+        }
+
+        function stopDragging() {
+            isDragging = false;
+            currentElement = null;
+        }
+
+        // Event listeners for dragging
+        document.addEventListener("mousemove", dragElement);
+        document.addEventListener("mouseup", stopDragging);
 
         // Event listener for the "Populate" button
         populateBtn.addEventListener("click", () => {
-            const text = yourText.value.trim(); // Get the input text
+            const text = yourText.value.trim();
             if (text) {
                 renderTextAsSVG(text);
             }
@@ -649,8 +786,85 @@
 
         // Event listener for the "Clear" button
         clearBtn.addEventListener("click", () => {
-            yourText.value = ''; // Clear the input field
-            svgContainer.innerHTML = ''; // Clear the SVG container
+            yourText.value = '';
+            svgContainer.innerHTML = '';
+            rotation = 0;
+            translateY = 0;
+            scale = 1;
+            ledCountPerChar = 5;
+            ledCountInput.value = 5;
+        });
+
+        // Toolbar event listeners
+        rotateLeftBtn.addEventListener("click", () => {
+            rotation -= 15;
+            renderTextAsSVG(yourText.value.trim());
+        });
+
+        rotateRightBtn.addEventListener("click", () => {
+            rotation += 15;
+            renderTextAsSVG(yourText.value.trim());
+        });
+
+        moveUpBtn.addEventListener("click", () => {
+            translateY -= 10;
+            renderTextAsSVG(yourText.value.trim());
+        });
+
+        moveDownBtn.addEventListener("click", () => {
+            translateY += 10;
+            renderTextAsSVG(yourText.value.trim());
+        });
+
+        scaleUpBtn.addEventListener("click", () => {
+            scale *= 1.1;
+            renderTextAsSVG(yourText.value.trim());
+        });
+
+        scaleDownBtn.addEventListener("click", () => {
+            scale /= 1.1;
+            renderTextAsSVG(yourText.value.trim());
+        });
+
+        increaseLedsBtn.addEventListener("click", () => {
+            ledCountPerChar = Math.min(ledCountPerChar + 1, 10);
+            ledCountInput.value = ledCountPerChar;
+            renderTextAsSVG(yourText.value.trim());
+        });
+
+        decreaseLedsBtn.addEventListener("click", () => {
+            ledCountPerChar = Math.max(ledCountPerChar - 1, 1);
+            ledCountInput.value = ledCountPerChar;
+            renderTextAsSVG(yourText.value.trim());
+        });
+
+        clearCanvasBtn.addEventListener("click", () => {
+            yourText.value = '';
+            svgContainer.innerHTML = '';
+            rotation = 0;
+            translateY = 0;
+            scale = 1;
+            ledCountPerChar = 5;
+            ledCountInput.value = 5;
+        });
+
+        // Editor event listeners
+        strokeColorInput.addEventListener("input", () => {
+            updateStyles();
+        });
+
+        strokeWidthInput.addEventListener("input", () => {
+            updateStyles();
+            renderTextAsSVG(yourText.value.trim()); // Re-render to adjust LED positions
+        });
+
+        ledColorInput.addEventListener("input", () => {
+            updateStyles();
+        });
+
+        ledCountInput.addEventListener("input", () => {
+            ledCountPerChar = parseInt(ledCountInput.value);
+            renderTextAsSVG(yourText.value.trim());
         });
     </script>
 </body>
